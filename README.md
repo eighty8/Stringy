@@ -1,4 +1,4 @@
-![Stringy](http://danielstjules.com/github/stringy-logo.png)
+# Stringy
 
 A PHP string manipulation library with multibyte support. Compatible with PHP
 5.4+, PHP 7+, and HHVM.
