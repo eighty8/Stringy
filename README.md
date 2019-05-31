@@ -7,13 +7,9 @@ A PHP string manipulation library with multibyte support. Compatible with PHP
 s('string')->toTitleCase()->ensureRight('y') == 'Stringy'
 ```
 
-Refer to the [1.x branch](https://github.com/danielstjules/Stringy/tree/1.x) or
-[2.x branch](https://github.com/danielstjules/Stringy/tree/2.x) for older
+Refer to the [1.x branch](https://github.com/eighty8/Stringy/tree/1.x) or
+[2.x branch](https://github.com/eighty8/Stringy/tree/2.x) for older
 documentation.
-
-[![Build Status](https://api.travis-ci.org/danielstjules/Stringy.svg?branch=master)](https://travis-ci.org/danielstjules/Stringy)
-[![Total Downloads](https://poser.pugx.org/danielstjules/stringy/downloads)](https://packagist.org/packages/danielstjules/stringy)
-[![License](https://poser.pugx.org/danielstjules/stringy/license)](https://packagist.org/packages/danielstjules/stringy)
 
 * [Why?](#why)
 * [Installation](#installation)
@@ -180,7 +176,7 @@ in your composer.json file:
 
 ```json
 "require": {
-    "danielstjules/stringy": "~3.1.0"
+    "eighty8/stringy": "~3.1.0"
 }
 ```
 
@@ -1077,6 +1073,9 @@ Advanced substring methods
 
 From the project directory, tests can be ran using `phpunit`
 
-## License
+## License & Credit
+
+Big thanks to the original authors at [danielstjules/Stringy](https://github.com/danielstjules/Stringy), from which this project was forked from.
 
 Released under the MIT License - see `LICENSE.txt` for details.
+
