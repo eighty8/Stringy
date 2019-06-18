@@ -2,8 +2,16 @@
 
 use Stringy\Stringy as S;
 
-class StringyTestCase extends PHPUnit_Framework_TestCase
+class StringyTestCase extends \PHPUnit\Framework\TestCase
 {
+    public function testConstruct()
+    {
+        $stringy = new S('foo bar', 'UTF-8');
+        $this->assertStringy($stringy);
+        $this->assertEquals('foo bar', (string)$stringy);
+        $this->assertEquals('UTF-8', $stringy->getEncoding());
+    }
+
     /**
      * Asserts that a variable is of a Stringy instance.
      *
@@ -14,38 +22,27 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Stringy\Stringy', $actual);
     }
 
-    public function testConstruct()
-    {
-        $stringy = new S('foo bar', 'UTF-8');
-        $this->assertStringy($stringy);
-        $this->assertEquals('foo bar', (string) $stringy);
-        $this->assertEquals('UTF-8', $stringy->getEncoding());
-    }
-
     public function testEmptyConstruct()
     {
         $stringy = new S();
         $this->assertStringy($stringy);
-        $this->assertEquals('', (string) $stringy);
+        $this->assertEquals('', (string)$stringy);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
+
     public function testConstructWithArray()
     {
-        (string) new S([]);
+        $this->expectException(InvalidArgumentException::class);
+        (string)new S([]);
         $this->fail('Expecting exception when the constructor is passed an array');
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testMissingToString()
     {
-        (string) new S(new stdClass());
+        $this->expectException(InvalidArgumentException::class);
+        (string)new S(new stdClass());
         $this->fail('Expecting exception when the constructor is passed an ' .
-                    'object without a __toString method');
+            'object without a __toString method');
     }
 
     /**
@@ -53,7 +50,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
      */
     public function testToString($expected, $str)
     {
-        $this->assertEquals($expected, (string) new S($str));
+        $this->assertEquals($expected, (string)new S($str));
     }
 
     public function toStringProvider()
@@ -64,7 +61,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['1', true],
             ['-9', -9],
             ['1.18', 1.18],
-            [' string  ', ' string  ']
+            [' string  ', ' string  '],
         ];
     }
 
@@ -72,7 +69,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create('foo bar', 'UTF-8');
         $this->assertStringy($stringy);
-        $this->assertEquals('foo bar', (string) $stringy);
+        $this->assertEquals('foo bar', (string)$stringy);
         $this->assertEquals('UTF-8', $stringy->getEncoding());
     }
 
@@ -127,7 +124,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [false, 3],
             [true, -1],
             [true, -3],
-            [false, -4]
+            [false, -4],
         ];
     }
 
@@ -141,29 +138,23 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         $this->assertEquals('ô', $stringy[2]);
     }
 
-    /**
-     * @expectedException \OutOfBoundsException
-     */
     public function testOffsetGetOutOfBounds()
     {
+        $this->expectException(\OutOfBoundsException::class);
         $stringy = S::create('fòô', 'UTF-8');
         $test = $stringy[3];
     }
 
-    /**
-     * @expectedException \Exception
-     */
     public function testOffsetSet()
     {
+        $this->expectException(\Exception::class);
         $stringy = S::create('fòô', 'UTF-8');
         $stringy[1] = 'invalid';
     }
 
-    /**
-     * @expectedException \Exception
-     */
     public function testOffsetUnset()
     {
+        $this->expectException(\Exception::class);
         $stringy = S::create('fòô', 'UTF-8');
         unset($stringy[1]);
     }
@@ -232,7 +223,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         return [
             ['foobar', 'foo', 'bar'],
-            ['fòôbàř', 'fòô', 'bàř', 'UTF-8']
+            ['fòôbàř', 'fòô', 'bàř', 'UTF-8'],
         ];
     }
 
@@ -250,7 +241,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         return [
             ['foobar', 'bar', 'foo'],
-            ['fòôbàř', 'bàř', 'fòô', 'UTF-8']
+            ['fòôbàř', 'bàř', 'fòô', 'UTF-8'],
         ];
     }
 
@@ -260,9 +251,9 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     public function testChars($expected, $str, $encoding = null)
     {
         $result = S::create($str, $encoding)->chars();
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray($result);
         foreach ($result as $char) {
-            $this->assertInternalType('string', $char);
+            $this->assertIsString($char);
         }
         $this->assertEquals($expected, $result);
     }
@@ -272,7 +263,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         return [
             [[], ''],
             [['T', 'e', 's', 't'], 'Test'],
-            [['F', 'ò', 'ô', ' ', 'B', 'à', 'ř'], 'Fòô Bàř', 'UTF-8']
+            [['F', 'ò', 'ô', ' ', 'B', 'à', 'ř'], 'Fòô Bàř', 'UTF-8'],
         ];
     }
 
@@ -283,7 +274,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $result = S::create($str, $encoding)->lines();
 
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray($result);
         foreach ($result as $line) {
             $this->assertStringy($line);
         }
@@ -313,6 +304,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [['', 'fòô', 'bàř'], "\r\nfòô\r\nbàř", 'UTF-8'],
         ];
     }
+
     /**
      * @dataProvider upperCaseFirstProvider()
      */
@@ -330,7 +322,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['Test', 'test'],
             ['1a', '1a'],
             ['Σ test', 'σ test', 'UTF-8'],
-            [' σ test', ' σ test', 'UTF-8']
+            [' σ test', ' σ test', 'UTF-8'],
         ];
     }
 
@@ -353,7 +345,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['test', 'test'],
             ['1a', '1a'],
             ['σ test', 'Σ test', 'UTF-8'],
-            [' Σ test', ' Σ test', 'UTF-8']
+            [' Σ test', ' Σ test', 'UTF-8'],
         ];
     }
 
@@ -390,7 +382,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['1Camel2Case', '1camel2case'],
             ['camelΣase', 'camel σase', 'UTF-8'],
             ['στανιλCase', 'Στανιλ case', 'UTF-8'],
-            ['σamelCase', 'σamel  Case', 'UTF-8']
+            ['σamelCase', 'σamel  Case', 'UTF-8'],
         ];
     }
 
@@ -421,7 +413,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['1Camel2Case', '1camel2case'],
             ['CamelΣase', 'camel σase', 'UTF-8'],
             ['ΣτανιλCase', 'στανιλ case', 'UTF-8'],
-            ['ΣamelCase', 'Σamel  Case', 'UTF-8']
+            ['ΣamelCase', 'Σamel  Case', 'UTF-8'],
         ];
     }
 
@@ -458,7 +450,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['background-color', 'backgroundColor'],
             ['dash-σase', 'dash Σase', 'UTF-8'],
             ['στανιλ-case', 'Στανιλ case', 'UTF-8'],
-            ['σash-case', 'Σash  Case', 'UTF-8']
+            ['σash-case', 'Σash  Case', 'UTF-8'],
         ];
     }
 
@@ -492,7 +484,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['yes_we_can', 'yesWeCan'],
             ['test_σase', 'test Σase', 'UTF-8'],
             ['στανιλ_case', 'Στανιλ case', 'UTF-8'],
-            ['σash_case', 'Σash  Case', 'UTF-8']
+            ['σash_case', 'Σash  Case', 'UTF-8'],
         ];
     }
 
@@ -524,7 +516,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['1test2case', '1test2case', '*'],
             ['test ύα σase', 'test Σase', ' ύα ', 'UTF-8',],
             ['στανιλαcase', 'Στανιλ case', 'α', 'UTF-8',],
-            ['σashΘcase', 'Σash  Case', 'Θ', 'UTF-8']
+            ['σashΘcase', 'Σash  Case', 'Θ', 'UTF-8'],
         ];
     }
 
@@ -546,7 +538,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['TESTcASE', 'testCase'],
             ['tEST-cASE', 'Test-Case'],
             [' - σASH  cASE', ' - Σash  Case', 'UTF-8'],
-            ['νΤΑΝΙΛ', 'Ντανιλ', 'UTF-8']
+            ['νΤΑΝΙΛ', 'Ντανιλ', 'UTF-8'],
         ];
     }
 
@@ -573,7 +565,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['Testing the Method', 'testing the method', $ignore],
             ['I Like to Watch Dvds at Home', 'i like to watch DVDs at home',
                 $ignore],
-            ['Θα Ήθελα Να Φύγει', '  Θα ήθελα να φύγει  ', null, 'UTF-8']
+            ['Θα Ήθελα Να Φύγει', '  Θα ήθελα να φύγει  ', null, 'UTF-8'],
         ];
     }
 
@@ -594,7 +586,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         return [
             ['Author', 'author_id'],
             ['Test user', ' _test_user_'],
-            ['Συγγραφέας', ' συγγραφέας_id ', 'UTF-8']
+            ['Συγγραφέας', ' συγγραφέας_id ', 'UTF-8'],
         ];
     }
 
@@ -616,7 +608,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['"I see..."', '“I see…”'],
             ["'This too'", "‘This too’"],
             ['test-dash', 'test—dash'],
-            ['Ο συγγραφέας είπε...', 'Ο συγγραφέας είπε…']
+            ['Ο συγγραφέας είπε...', 'Ο συγγραφέας είπε…'],
         ];
     }
 
@@ -686,7 +678,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['𐍉', '𐍉', 'en', false],
             ['aouAOU', 'äöüÄÖÜ'],
             ['aeoeueAEOEUE', 'äöüÄÖÜ', 'de'],
-            ['aeoeueAEOEUE', 'äöüÄÖÜ', 'de_DE']
+            ['aeoeueAEOEUE', 'äöüÄÖÜ', 'de_DE'],
         ];
     }
 
@@ -724,15 +716,13 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             // both
             ['foo bar ', 'foo bar', 8, ' ', 'both'],
             ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬ø', 'both', 'UTF-8'],
-            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'both', 'UTF-8']
+            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'both', 'UTF-8'],
         ];
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testPadException()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $stringy = S::create('foo');
         $result = $stringy->pad(5, 'foo', 'bar');
     }
@@ -815,7 +805,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬ø', 'UTF-8'],
             ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬øÿ', 'UTF-8'],
             ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬øÿ', 'UTF-8'],
-            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'UTF-8']
+            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'UTF-8'],
         ];
     }
 
@@ -827,7 +817,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->startsWith($substring, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -857,7 +847,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->startsWithAny($substrings, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -887,7 +877,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->endsWith($substring, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -917,7 +907,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->endsWithAny($substrings, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -946,7 +936,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->toBoolean();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -992,7 +982,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['    foo  bar  ', '		foo	bar	', 2],
             ['foobar', '	foo	bar	', 0],
             ["    foo\n    bar", "	foo\n	bar"],
-            ["    fòô\n    bàř", "	fòô\n	bàř"]
+            ["    fòô\n    bàř", "	fòô\n	bàř"],
         ];
     }
 
@@ -1015,7 +1005,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['	foo	bar	', '     foo     bar     ', 5],
             ['		foo	bar	', '    foo  bar  ', 2],
             ["	foo\n	bar", "    foo\n    bar"],
-            ["	fòô\n	bàř", "    fòô\n    bàř"]
+            ["	fòô\n	bàř", "    fòô\n    bàř"],
         ];
     }
 
@@ -1118,7 +1108,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['a_string_with_underscores', 'A_string with_underscores', '_'],
             ['a_string_with_dashes', 'A string-with-dashes', '_'],
             ['a\string\with\dashes', 'A string-with-dashes', '\\'],
-            ['an_odd_string', '--   An odd__   string-_', '_']
+            ['an_odd_string', '--   An odd__   string-_', '_'],
         ];
     }
 
@@ -1153,7 +1143,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['', '{}fòô}', '{', '}', 0, 'UTF-8'],
             ['fòô', '}{fòô}', '{', '}', 0, 'UTF-8'],
             ['fòô', 'A description of {fòô} goes here', '{', '}', 0, 'UTF-8'],
-            ['bàř', '{fòô} and {bàř}', '{', '}', 1, 'UTF-8']
+            ['bàř', '{fòô} and {bàř}', '{', '}', 1, 'UTF-8'],
         ];
     }
 
@@ -1165,36 +1155,9 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($haystack, $encoding);
         $result = $stringy->contains($needle, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($haystack, $stringy);
-    }
-
-    public function containsProvider()
-    {
-        return [
-            [true, 'Str contains foo bar', 'foo bar'],
-            [true, '12398!@(*%!@# @!%#*&^%',  ' @!%#*&^%'],
-            [true, 'Ο συγγραφέας είπε', 'συγγραφέας', 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'å´¥©', true, 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'å˚ ∆', true, 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'øœ¬', true, 'UTF-8'],
-            [false, 'Str contains foo bar', 'Foo bar'],
-            [false, 'Str contains foo bar', 'foobar'],
-            [false, 'Str contains foo bar', 'foo bar '],
-            [false, 'Ο συγγραφέας είπε', '  συγγραφέας ', true, 'UTF-8'],
-            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ' ßå˚', true, 'UTF-8'],
-            [true, 'Str contains foo bar', 'Foo bar', false],
-            [true, '12398!@(*%!@# @!%#*&^%',  ' @!%#*&^%', false],
-            [true, 'Ο συγγραφέας είπε', 'ΣΥΓΓΡΑΦΈΑΣ', false, 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'Å´¥©', false, 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'Å˚ ∆', false, 'UTF-8'],
-            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'ØŒ¬', false, 'UTF-8'],
-            [false, 'Str contains foo bar', 'foobar', false],
-            [false, 'Str contains foo bar', 'foo bar ', false],
-            [false, 'Ο συγγραφέας είπε', '  συγγραφέας ', false, 'UTF-8'],
-            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ' ßÅ˚', false, 'UTF-8']
-        ];
     }
 
     /**
@@ -1205,7 +1168,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($haystack, $encoding);
         $result = $stringy->containsAny($needles, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($haystack, $stringy);
     }
@@ -1248,6 +1211,33 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         return array_merge($singleNeedle, $provider);
     }
 
+    public function containsProvider()
+    {
+        return [
+            [true, 'Str contains foo bar', 'foo bar'],
+            [true, '12398!@(*%!@# @!%#*&^%', ' @!%#*&^%'],
+            [true, 'Ο συγγραφέας είπε', 'συγγραφέας', 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'å´¥©', true, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'å˚ ∆', true, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'øœ¬', true, 'UTF-8'],
+            [false, 'Str contains foo bar', 'Foo bar'],
+            [false, 'Str contains foo bar', 'foobar'],
+            [false, 'Str contains foo bar', 'foo bar '],
+            [false, 'Ο συγγραφέας είπε', '  συγγραφέας ', true, 'UTF-8'],
+            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ' ßå˚', true, 'UTF-8'],
+            [true, 'Str contains foo bar', 'Foo bar', false],
+            [true, '12398!@(*%!@# @!%#*&^%', ' @!%#*&^%', false],
+            [true, 'Ο συγγραφέας είπε', 'ΣΥΓΓΡΑΦΈΑΣ', false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'Å´¥©', false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'Å˚ ∆', false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'ØŒ¬', false, 'UTF-8'],
+            [false, 'Str contains foo bar', 'foobar', false],
+            [false, 'Str contains foo bar', 'foo bar ', false],
+            [false, 'Ο συγγραφέας είπε', '  συγγραφέας ', false, 'UTF-8'],
+            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ' ßÅ˚', false, 'UTF-8'],
+        ];
+    }
+
     /**
      * @dataProvider containsAllProvider()
      */
@@ -1256,7 +1246,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($haystack, $encoding);
         $result = $stringy->containsAll($needles, $caseSensitive);
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($haystack, $stringy);
     }
@@ -1318,7 +1308,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['test', 'test', ''],
             ['**', '', '*'],
             ['¬fòô bàř¬', 'fòô bàř', '¬'],
-            ['ßå∆˚ test ßå∆˚', ' test ', 'ßå∆˚']
+            ['ßå∆˚ test ßå∆˚', ' test ', 'ßå∆˚'],
         ];
     }
 
@@ -1345,7 +1335,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['fòôbàř', 'fòôbř', 'à', 4, 'UTF-8'],
             ['fòô bàř', 'òô bàř', 'f', 0, 'UTF-8'],
             ['fòô bàř', 'f bàř', 'òô', 1, 'UTF-8'],
-            ['fòô bàř', 'fòô bà', 'ř', 6, 'UTF-8']
+            ['fòô bàř', 'fòô bà', 'ř', 6, 'UTF-8'],
         ];
     }
 
@@ -1386,7 +1376,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['Test fϰϰ', 'Test fòô bàř', 8, 'ϰϰ', 'UTF-8'],
             ['Test ϰϰ', 'Test fòô bàř', 7, 'ϰϰ', 'UTF-8'],
             ['Teϰϰ', 'Test fòô bàř', 4, 'ϰϰ', 'UTF-8'],
-            ['What are your pl...', 'What are your plans today?', 19, '...']
+            ['What are your pl...', 'What are your plans today?', 19, '...'],
         ];
     }
 
@@ -1427,7 +1417,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['Tëstϰϰ', 'Tëst fòô bàř', 8, 'ϰϰ', 'UTF-8'],
             ['Tëstϰϰ', 'Tëst fòô bàř', 7, 'ϰϰ', 'UTF-8'],
             ['Tëϰϰ', 'Tëst fòô bàř', 4, 'ϰϰ', 'UTF-8'],
-            ['What are your plans...', 'What are your plans today?', 22, '...']
+            ['What are your plans...', 'What are your plans today?', 22, '...'],
         ];
     }
 
@@ -1450,7 +1440,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['raboof', 'foobar'],
             ['řàbôòf', 'fòôbàř', 'UTF-8'],
             ['řàb ôòf', 'fòô bàř', 'UTF-8'],
-            ['∂∆ ˚åß', 'ßå˚ ∆∂', 'UTF-8']
+            ['∂∆ ˚åß', 'ßå˚ ∆∂', 'UTF-8'],
         ];
     }
 
@@ -1475,7 +1465,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['foofoofoo', 'foo', 3],
             ['fòô', 'fòô', 1, 'UTF-8'],
             ['fòôfòô', 'fòô', 2, 'UTF-8'],
-            ['fòôfòôfòô', 'fòô', 3, 'UTF-8']
+            ['fòôfòôfòô', 'fòô', 3, 'UTF-8'],
         ];
     }
 
@@ -1507,7 +1497,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         return [
             ['foo bar'],
             ['∂∆ ˚åß', 'UTF-8'],
-            ['å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'UTF-8']
+            ['å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', 'UTF-8'],
         ];
     }
 
@@ -1699,7 +1689,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->length();
-        $this->assertInternalType('int', $result);
+        $this->assertisInt($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -1710,7 +1700,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [11, '  foo bar  '],
             [1, 'f'],
             [0, ''],
-            [7, 'fòô bàř', 'UTF-8']
+            [7, 'fòô bàř', 'UTF-8'],
         ];
     }
 
@@ -1745,7 +1735,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['', 'fòôbàř', 3, 0, 'UTF-8'],
             ['', 'fòôbàř', 3, 2, 'UTF-8'],
             ['bà', 'fòôbàř', 3, 5, 'UTF-8'],
-            ['bà', 'fòôbàř', 3, -1, 'UTF-8']
+            ['bà', 'fòôbàř', 3, -1, 'UTF-8'],
         ];
     }
 
@@ -1758,7 +1748,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         $stringy = S::create($str, $encoding);
         $result = $stringy->split($pattern, $limit);
 
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray($result);
         foreach ($result as $string) {
             $this->assertStringy($string);
         }
@@ -1789,7 +1779,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [['fòô'], 'fòô,bàř,baz', ',', 1, 'UTF-8'],
             [['fòô', 'bàř'], 'fòô,bàř,baz', ',', 2, 'UTF-8'],
             [['fòô', 'bàř', 'baz'], 'fòô,bàř,baz', ',', 3, 'UTF-8'],
-            [['fòô', 'bàř', 'baz'], 'fòô,bàř,baz', ',', 10, 'UTF-8']
+            [['fòô', 'bàř', 'baz'], 'fòô,bàř,baz', ',', 10, 'UTF-8'],
         ];
     }
 
@@ -1847,7 +1837,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['fòô bàř', 'fòô bàř', 0, null, 'UTF-8'],
             ['bàř', 'fòô bàř', 4, null, 'UTF-8'],
             ['ô b', 'fòô bàř', 2, 3, 'UTF-8'],
-            ['', 'fòô bàř', 4, 0, 'UTF-8']
+            ['', 'fòô bàř', 4, 0, 'UTF-8'],
         ];
     }
 
@@ -2019,7 +2009,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['òô bàř', 'fòô bàř', 'f', 'UTF-8'],
             ['bàř', 'fòô bàř', 'fòô ', 'UTF-8'],
             ['fòô bàř', 'fòô bàř', 'òô', 'UTF-8'],
-            ['fòô bàř', 'fòô bàř', 'òô bàř', 'UTF-8']
+            ['fòô bàř', 'fòô bàř', 'òô bàř', 'UTF-8'],
         ];
     }
 
@@ -2049,7 +2039,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['fòô bà', 'fòô bàř', 'ř', 'UTF-8'],
             ['fòô', 'fòô bàř', ' bàř', 'UTF-8'],
             ['fòô bàř', 'fòô bàř', 'bà', 'UTF-8'],
-            ['fòô bàř', 'fòô bàř', 'fòô bà', 'UTF-8']
+            ['fòô bàř', 'fòô bàř', 'fòô bà', 'UTF-8'],
         ];
     }
 
@@ -2060,7 +2050,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isAlpha();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2077,7 +2067,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [false, 'fòôbàř2', 'UTF-8'],
             [true, 'ҠѨњфгШ', 'UTF-8'],
             [false, 'ҠѨњ¨ˆфгШ', 'UTF-8'],
-            [true, '丹尼爾', 'UTF-8']
+            [true, '丹尼爾', 'UTF-8'],
         ];
     }
 
@@ -2088,7 +2078,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isAlphanumeric();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2108,7 +2098,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [false, 'ҠѨњ¨ˆфгШ', 'UTF-8'],
             [true, '丹尼爾111', 'UTF-8'],
             [true, 'دانيال1', 'UTF-8'],
-            [false, 'دانيال1 ', 'UTF-8']
+            [false, 'دانيال1 ', 'UTF-8'],
         ];
     }
 
@@ -2119,7 +2109,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isBlank();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2152,7 +2142,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isJson();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2190,7 +2180,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isLowerCase();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2216,7 +2206,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->hasLowerCase();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2246,7 +2236,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isSerialized();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2271,7 +2261,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str);
         $result = $stringy->isBase64();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2281,10 +2271,10 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
         return [
             [false, ' '],
             [true, ''],
-            [true, base64_encode('FooBar') ],
-            [true, base64_encode(' ') ],
-            [true, base64_encode('FÒÔBÀŘ') ],
-            [true, base64_encode('συγγραφέας') ],
+            [true, base64_encode('FooBar')],
+            [true, base64_encode(' ')],
+            [true, base64_encode('FÒÔBÀŘ')],
+            [true, base64_encode('συγγραφέας')],
             [false, 'Foobar'],
         ];
     }
@@ -2296,7 +2286,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isUpperCase();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2322,7 +2312,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->hasUpperCase();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2352,7 +2342,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->isHexadecimal();
-        $this->assertInternalType('boolean', $result);
+        $this->assertIsBool($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2384,7 +2374,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
     {
         $stringy = S::create($str, $encoding);
         $result = $stringy->countSubstr($substring, $caseSensitive);
-        $this->assertInternalType('int', $result);
+        $this->assertIsInt($result);
         $this->assertEquals($expected, $result);
         $this->assertEquals($str, $stringy);
     }
@@ -2406,7 +2396,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             [2, 'foo bar', 'O', false],
             [1, 'fòô bàř', 'fÒÔ', false, 'UTF-8'],
             [2, 'fôòô bàř', 'Ô', false, 'UTF-8'],
-            [2, 'συγγραφέας', 'Σ', false, 'UTF-8']
+            [2, 'συγγραφέας', 'Σ', false, 'UTF-8'],
         ];
     }
 
@@ -2469,7 +2459,7 @@ class StringyTestCase extends PHPUnit_Framework_TestCase
             ['', '', '', '', 'msr', 'UTF-8'],
             ['bàř', 'fòô ', 'f[òô]+\s', 'bàř', 'msr', 'UTF-8'],
             ['fòô', 'fò', '(ò)', '\\1ô', 'msr', 'UTF-8'],
-            ['fòô', 'bàř', '[[:alpha:]]{3}', 'fòô', 'msr', 'UTF-8']
+            ['fòô', 'bàř', '[[:alpha:]]{3}', 'fòô', 'msr', 'UTF-8'],
         ];
     }
 
